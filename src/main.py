@@ -1,79 +1,56 @@
-import glfw
-import imgui
-
-from OpenGL.GL import *
-from imgui.integrations.glfw import GlfwRenderer
+from window import *
+from field import *
+from snake import *
 
 def main():
-    imgui.create_context()
-    window = impl_glfw_init()
-    impl = GlfwRenderer(window)
+	window = Window()
 
-    while not glfw.window_should_close(window):
-        glfw.poll_events()
-        impl.process_inputs()
+	field = Field(16, 16)
+	snake = Snake(field)
 
-        imgui.new_frame()
+	snake.draw_on(field)
 
-        if imgui.begin_main_menu_bar():
-            if imgui.begin_menu("File", True):
+	while window.is_running():
+		window.poll_events()
+		window.begin_frame()
 
-                clicked_quit, selected_quit = imgui.menu_item(
-                    "Quit", 'Cmd+Q', False, True
-                )
+		if imgui.begin_main_menu_bar():
+			if imgui.begin_menu("File", True):
 
-                if clicked_quit:
-                    exit(1)
+				clicked_quit, selected_quit = imgui.menu_item(
+					"Quit", 'Cmd+Q', False, True
+				)
 
-                imgui.end_menu()
-            imgui.end_main_menu_bar()
+				if clicked_quit:
+					exit(1)
 
-        imgui.begin("Custom window", True)
-        imgui.text('foobarbaz')
-        imgui.end()
+				imgui.end_menu()
+			imgui.end_main_menu_bar()
 
-        # show_test_window()
-        imgui.show_test_window()
-        glClearColor(0, 0, 0, 1)
-        glClear(GL_COLOR_BUFFER_BIT)
+		imgui.begin('custom window')
+		
+		boundings = ChildWindowBoundings()
 
-        imgui.render()
-        impl.render(imgui.get_draw_data())
-        glfw.swap_buffers(window)
+		cell_size = 20
 
-    impl.shutdown()
-    glfw.terminate()
+		for x in field.get_width_range():
+			for y in field.get_height_range():
+				color = field.get_color_of(x, y).components
+				imgui.get_window_draw_list().add_rect_filled(
+					boundings.min.x + cell_size * x, 		boundings.min.y + cell_size * y,
+					boundings.min.x + cell_size * (x + 1), 	boundings.min.y + cell_size * (y + 1),
+					imgui.get_color_u32_rgba(color[0], color[1], color[2], color[3])
+				)
 
+		imgui.end()
 
-def impl_glfw_init():
-    width, height = 1280, 720
-    window_name = "minimal ImGui/GLFW3 example"
+		imgui.show_test_window()
 
-    if not glfw.init():
-        print("Could not initialize OpenGL context")
-        exit(1)
+		glClearColor(0, 0, 0, 1)
+		glClear(GL_COLOR_BUFFER_BIT)
+		imgui.render()
 
-    # OS X supports only forward-compatible core profiles from 3.2
-    glfw.window_hint(glfw.CONTEXT_VERSION_MAJOR, 3)
-    glfw.window_hint(glfw.CONTEXT_VERSION_MINOR, 3)
-    glfw.window_hint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)
-
-    glfw.window_hint(glfw.OPENGL_FORWARD_COMPAT, True)
-
-    # Create a windowed mode window and its OpenGL context
-    window = glfw.create_window(
-        int(width), int(height), window_name, None, None
-    )
-    glfw.make_context_current(window)
-    glfw.maximize_window(window)
-
-    if not window:
-        glfw.terminate()
-        print("Could not initialize Window")
-        exit(1)
-
-    return window
-
+		window.end_frame()
 
 if __name__ == "__main__":
-    main()
+	main()
