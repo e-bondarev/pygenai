@@ -1,6 +1,6 @@
-from enum import Enum
-import random
-from helper import Vec4
+from enum 		import Enum
+from helper 	import Vec4
+from random 	import randint
 
 class CellState(Enum):
 	Empty = 0
@@ -9,7 +9,7 @@ class CellState(Enum):
 
 class Field:
 	colors = {
-		CellState.Empty: Vec4(0, 0, 0, 0),
+		CellState.Empty: Vec4(1, 1, 1, 0.2),
 		CellState.Snake: Vec4(1, 0, 0, 1),
 		CellState.Apple: Vec4(1, 1, 0, 1),
 	}
@@ -25,11 +25,14 @@ class Field:
 				column.append(CellState.Empty)
 			self.data.append(column)
 
+	def in_bounds(self, x: int, y: int) -> bool:
+		return x >= 0 and y >= 0 and x < self.get_width() and y < self.get_height()
+
 	def get_random_x(self):
-		return random.randint(0, self.get_width() - 1)
+		return randint(0, self.get_width() - 1)
 
 	def get_random_y(self):
-		return random.randint(0, self.get_height() - 1)
+		return randint(0, self.get_height() - 1)
 
 	def get_color_of(self, x, y):
 		state = self.data[x][y]
